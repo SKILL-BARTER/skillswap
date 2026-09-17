@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# build output
+client/dist/
+
+# database (recreated + seeded automatically)
+server/data/
+
+# logs & env
+*.log
+.env
+.env.local
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# AI coding workspace
+.aicoding-chat-workspace

@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "alexcvzz.vscode-sqlite",
+    "humao.rest-client"
+  ]
+}

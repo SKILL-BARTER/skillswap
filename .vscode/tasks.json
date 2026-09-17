@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev (API + web)",
+      "type": "shell",
+      "command": "npm run dev",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "seed demo data",
+      "type": "shell",
+      "command": "npm run seed",
+      "problemMatcher": []
+    },
+    {
+      "label": "build client",
+      "type": "shell",
+      "command": "npm run build",
+      "problemMatcher": []
+    },
+    {
+      "label": "test: full swap flow",
+      "type": "shell",
+      "command": "npm run test:flow",
+      "problemMatcher": []
+    }
+  ]
+}
