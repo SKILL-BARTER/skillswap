@@ -43,6 +43,13 @@ export function getCompletedCount(userId) {
 export function getProfile(userId, { includeEmail = false } = {}) {
   const u = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
   if (!u) return null;
+  let interests = [];
+  try {
+    const parsed = JSON.parse(u.interests || '[]');
+    if (Array.isArray(parsed)) interests = parsed;
+  } catch {
+    // Malformed/legacy value, just show no interests rather than erroring.
+  }
   return {
     id: u.id,
     name: u.name,
@@ -50,6 +57,15 @@ export function getProfile(userId, { includeEmail = false } = {}) {
     university: u.university,
     bio: u.bio,
     avatar_color: u.avatar_color,
+    avatar_url: u.avatar_url,
+    degree: u.degree,
+    year_of_study: u.year_of_study,
+    campus: u.campus,
+    interests,
+    availability: u.availability,
+    linkedin_url: u.linkedin_url,
+    github_url: u.github_url,
+    portfolio_url: u.portfolio_url,
     credits: u.credits,
     verified: !!u.verified,
     created_at: u.created_at,

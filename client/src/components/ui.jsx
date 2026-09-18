@@ -103,6 +103,18 @@ export function Logo({ size = 30 }) {
 
 /* ---------- Avatar ---------- */
 export function Avatar({ user, size = 40, className = '' }) {
+  if (user?.avatar_url) {
+    return (
+      <img
+        src={user.avatar_url}
+        alt=""
+        className={`avatar avatar-photo ${className}`}
+        style={{ width: size, height: size }}
+        aria-hidden="true"
+      />
+    );
+  }
+
   const initials = (user?.name || '?')
     .split(/\s+/)
     .map((p) => p[0])
