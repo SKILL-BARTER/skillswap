@@ -834,3 +834,120 @@
   border: none;
   margin: 6px 0;
 }
+
+/* ============ Verified badge ============ */
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1d9bf0;
+  flex: none;
+  vertical-align: -0.15em;
+  cursor: default;
+}
+
+.name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.verified-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #7cc7f5;
+  background: rgba(29, 155, 240, 0.12);
+  border: 1px solid rgba(29, 155, 240, 0.35);
+}
+
+/* ============ Selfie verification ============ */
+.verify-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  flex-wrap: wrap;
+}
+
+.verify-ico {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(29, 155, 240, 0.12);
+  border: 1px solid rgba(29, 155, 240, 0.35);
+  color: #7cc7f5;
+  flex: none;
+}
+
+.selfie-frame {
+  position: relative;
+  width: min(320px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #05070d;
+  border: 1px solid var(--border-strong);
+}
+
+.selfie-frame video,
+.selfie-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.selfie-frame video {
+  transform: scaleX(-1); /* mirror, so it behaves like a real selfie camera */
+}
+
+.selfie-hint {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(4, 6, 12, 0.72);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.selfie-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.selfie-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 26px 0 10px;
+  text-align: center;
+}
+
+.selfie-done .big-tick {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(52, 211, 153, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  color: var(--green);
+}

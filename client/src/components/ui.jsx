@@ -52,6 +52,35 @@ export const PlusIcon = ({ size = 16 }) => (
   </svg>
 );
 
+export const CameraIcon = ({ size = 18 }) => (
+  <svg {...strokeProps(size, 1.9)}>
+    <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.2a2 2 0 0 0 1.7-1l.5-.8A1.5 1.5 0 0 1 10.2 3h3.6a1.5 1.5 0 0 1 1.3.8l.5.8a2 2 0 0 0 1.7 1h1.2A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5z" />
+    <circle cx="12" cy="12.3" r="3.6" />
+  </svg>
+);
+
+/* ---------- Verified student badge ---------- */
+export function VerifiedBadge({ size = 16, className = '', title = 'Verified student — confirmed with a live selfie' }) {
+  return (
+    <span className={`verified-badge ${className}`} title={title} role="img" aria-label={title}>
+      <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          fill="#1d9bf0"
+          d="M12 1.6l2.5 2.1 3.3-.3.9 3.2 2.9 1.6-1.3 3 1.3 3-2.9 1.6-.9 3.2-3.3-.3L12 22.4l-2.5-2.1-3.3.3-.9-3.2-2.9-1.6 1.3-3-1.3-3 2.9-1.6.9-3.2 3.3.3z"
+        />
+        <path
+          d="M8 12.4l2.9 2.9 5.5-5.7"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="2.3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
 /* ---------- Brand ---------- */
 export function Logo({ size = 30 }) {
   return (

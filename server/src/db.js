@@ -14,6 +14,9 @@ db.exec('PRAGMA foreign_keys = ON;');
  * Skill-Swap schema
  *
  * users       - students (auth + profile + optional skill credits)
+ *              verified / selfie_data back the selfie-verification badge:
+ *              a student is marked verified once they submit a live selfie,
+ *              which is stored so a human can re-check it later if needed.
  * skills      - normalized catalogue ("Guitar", "React", ...)
  * user_skills - a user either teaches or wants to learn a skill (type = 'teach' | 'learn')
  * swaps       - a request to exchange skills; status walks pending -> accepted -> completed
@@ -30,6 +33,8 @@ CREATE TABLE IF NOT EXISTS users (
   bio           TEXT NOT NULL DEFAULT '',
   avatar_color  TEXT NOT NULL DEFAULT '#6366f1',
   credits       INTEGER NOT NULL DEFAULT 0,
+  verified      INTEGER NOT NULL DEFAULT 0,
+  selfie_data   TEXT,
   created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -88,6 +93,33 @@ CREATE INDEX IF NOT EXISTS idx_reviews_reviewee ON reviews(reviewee_id);
 
 export function initSchema() {
   db.exec(SCHEMA);
+  migrate();
+}
+
+/*
+ * Lightweight migrations for databases created before a column existed
+ * (CREATE TABLE IF NOT EXISTS never alters an existing table).
+ */
+function migrate() {
+  const columns = new Set(db.prepare('PRAGMA table_info(users)').all().map((c) => c.name));
+  const added = [];
+
+  if (!columns.has('verified')) {
+    db.exec('ALTER TABLE users ADD COLUMN verified INTEGER NOT NULL DEFAULT 0');
+    added.push('verified');
+  }
+  if (!columns.has('selfie_data')) {
+    db.exec('ALTER TABLE users ADD COLUMN selfie_data TEXT');
+    added.push('selfie_data');
+  }
+
+  // One-time: flag the demo students (except maya@demo.edu, the account we
+  // demo the selfie flow with) as verified so the badge is visible out of the box.
+  if (added.includes('verified')) {
+    db.exec(
+      "UPDATE users SET verified = 1 WHERE email LIKE '%@demo.edu' AND email != 'maya@demo.edu'"
+    );
+  }
 }
 
 export function resetDb() {

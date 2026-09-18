@@ -21,6 +21,9 @@ export function createSession(userId) {
   return token;
 }
 
+// Sessions older than this are rejected (and cleaned up) by requireAuth.
+export const SESSION_TTL_DAYS = 30;
+
 export function destroySession(token) {
   db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
 }
@@ -30,9 +33,16 @@ export function requireAuth(req, res, next) {
   const token = header.startsWith('Bearer ') ? header.slice(7).trim() : null;
   if (!token) return res.status(401).json({ error: 'Not signed in' });
   const user = db
-    .prepare('SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?')
+    .prepare(
+      `SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id
+       WHERE s.token = ? AND s.created_at >= datetime('now', '-${SESSION_TTL_DAYS} days')`
+    )
     .get(token);
-  if (!user) return res.status(401).json({ error: 'Session expired, please sign in again' });
+  if (!user) {
+    // Drop the stale row (if any) so expired sessions don't pile up.
+    db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+    return res.status(401).json({ error: 'Session expired, please sign in again' });
+  }
   req.user = user;
   req.token = token;
   next();

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { db, initSchema } from './db.js';
 import { seedDemoData } from './seed.js';
 import authRoutes from './routes/auth.js';
+import authGoogleRoutes from './routes/auth-google.js';
 import skillsRoutes from './routes/skills.js';
 import matchesRoutes from './routes/matches.js';
 import swapsRoutes from './routes/swaps.js';
@@ -25,6 +26,7 @@ const app = express();
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', authGoogleRoutes);
 app.use('/api/skills', skillsRoutes);
 app.use('/api/matches', matchesRoutes);
 app.use('/api/swaps', swapsRoutes);

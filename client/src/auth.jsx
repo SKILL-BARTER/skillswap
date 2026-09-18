@@ -47,6 +47,12 @@ export function AuthProvider({ children }) {
       setUser(data.user);
       return data.user;
     },
+    async loginWithGoogle(idToken) {
+      const data = await api('/auth/google', { method: 'POST', body: { idToken } });
+      setToken(data.token);
+      setUser(data.user);
+      return data.user;
+    },
     async logout() {
       try {
         await api('/auth/logout', { method: 'POST' });

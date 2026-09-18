@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import ReviewsList from '../components/ReviewsList.jsx';
+import SelfieVerify from '../components/SelfieVerify.jsx';
 import SkillEditor from '../components/SkillEditor.jsx';
-import { Avatar, CoinIcon, Notice, Stars } from '../components/ui.jsx';
+import { Avatar, CameraIcon, CoinIcon, Notice, Stars, VerifiedBadge } from '../components/ui.jsx';
 
 const AVATAR_COLORS = ['#22d3ee', '#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#60a5fa', '#fb7185'];
 
@@ -15,6 +16,7 @@ export default function Profile() {
   const [color, setColor] = useState(user.avatar_color);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [verifyOpen, setVerifyOpen] = useState(false);
 
   useEffect(() => {
     api(`/users/${user.id}`)
@@ -52,7 +54,12 @@ export default function Profile() {
             <>
               <div className="spread">
                 <div>
-                  <h1 style={{ marginBottom: 2 }}>{user.name}</h1>
+                  <h1 style={{ marginBottom: 2 }}>
+                    <span className="name-row">
+                      {user.name}
+                      {user.verified ? <VerifiedBadge size={20} /> : null}
+                    </span>
+                  </h1>
                   <div className="muted">
                     {user.university || 'University not set'} · {user.email}
                   </div>
@@ -152,6 +159,44 @@ export default function Profile() {
           )}
         </div>
       </section>
+
+      {/* Selfie verification */}
+      {user.verified ? (
+        <section className="card verify-card">
+          <span className="verify-ico">
+            <VerifiedBadge size={24} title="Verified student" />
+          </span>
+          <div style={{ flex: 1, minWidth: '22ch' }}>
+            <strong>Verified student</strong>
+            <p className="muted" style={{ margin: '4px 0 0' }}>
+              Your selfie has been checked — the verified tick shows next to your name everywhere.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <section className="card verify-card">
+          <span className="verify-ico">
+            <CameraIcon size={22} />
+          </span>
+          <div style={{ flex: 1, minWidth: '22ch' }}>
+            <strong>Get the verified tick</strong>
+            <p className="muted" style={{ margin: '4px 0 0' }}>
+              Take a quick selfie so other students know they're trading with a real person. Takes
+              about ten seconds.
+            </p>
+          </div>
+          <button className="btn btn-primary" onClick={() => setVerifyOpen(true)}>
+            Verify with a selfie
+          </button>
+        </section>
+      )}
+
+      {verifyOpen ? (
+        <SelfieVerify
+          onClose={() => setVerifyOpen(false)}
+          onVerified={(u) => setUser(u)}
+        />
+      ) : null}
 
       <SkillEditor skills={user.skills} onChange={(skills) => setUser({ ...user, skills })} />
 

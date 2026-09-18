@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Avatar, CheckIcon, MatchRing, Stars, SwapIcon } from './ui.jsx';
+import { Avatar, CheckIcon, MatchRing, Stars, SwapIcon, VerifiedBadge } from './ui.jsx';
 
 const Chevron = ({ up }) => (
   <svg
@@ -53,7 +53,12 @@ export default function MatchCard({ match, onRequest }) {
         <div className="match-head">
           <Avatar user={user} size={46} />
           <div>
-            <h3>{user.name}</h3>
+            <h3>
+              <span className="name-row">
+                {user.name}
+                {user.verified ? <VerifiedBadge size={16} /> : null}
+              </span>
+            </h3>
             <div className="match-meta">
               {user.university ? <span>{user.university}</span> : null}
               {user.university ? <span className="meta-sep">·</span> : null}

@@ -4,6 +4,9 @@ node_modules/
 # build output
 client/dist/
 
+.env
+firebase-service-account.json
+
 # database (recreated + seeded automatically)
 server/data/
 

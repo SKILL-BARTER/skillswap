@@ -78,6 +78,7 @@ export function rankMatches(me, others) {
         bio: other.bio,
         avatar_color: other.avatar_color,
         credits: other.credits,
+        verified: !!other.verified,
         rating: other.rating,
         completed_swaps: other.completed_swaps,
         skills: other.skills,

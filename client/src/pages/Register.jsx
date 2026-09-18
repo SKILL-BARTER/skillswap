@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 import AuthShell from '../components/AuthShell.jsx';
+import GoogleButton from '../components/GoogleButton.jsx';
 import { Notice } from '../components/ui.jsx';
 
 export default function Register() {
@@ -41,6 +42,26 @@ export default function Register() {
         </div>
       ) : null}
 
+      <GoogleButton
+        label="Sign up with Google"
+        hint="SkillSwap is for students — sign up with your university email (e.g. you@university.edu, you@uni.ac.uk)."
+      />
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          margin: '16px 0',
+          color: 'var(--muted-color, #888)',
+          fontSize: 13,
+        }}
+      >
+        <div style={{ flex: 1, height: 1, background: 'currentColor', opacity: 0.25 }} />
+        or sign up with email
+        <div style={{ flex: 1, height: 1, background: 'currentColor', opacity: 0.25 }} />
+      </div>
+
       <form onSubmit={submit}>
         <div className="field">
           <label htmlFor="reg-name">Full name</label>
@@ -75,6 +96,7 @@ export default function Register() {
             value={form.university}
             onChange={set('university')}
           />
+          <p className="hint">Your university e-mail domain is what gets you in — personal addresses like Gmail are rejected.</p>
         </div>
         <div className="field">
           <label htmlFor="reg-password">Password</label>

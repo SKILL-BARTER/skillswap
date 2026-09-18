@@ -178,6 +178,46 @@ async function run() {
     'The other side\u2019s review shows on their profile too'
   );
 
+  // 11. University e-mail gate: personal addresses can't register
+  const gmail = await req('/auth/register', {
+    method: 'POST',
+    body: { name: 'No Student', email: 'someone@gmail.com', password: 'testpass123' },
+  });
+  ok(gmail.status === 403, 'Registering with a personal (gmail.com) address is rejected');
+  const uniEmail = await req('/auth/register', {
+    method: 'POST',
+    body: { name: 'Uni Student', email: `someone-${stamp}@harvard.edu`, password: 'testpass123' },
+  });
+  ok(uniEmail.status === 201, 'Registering with a university address still works');
+
+  // 12. Selfie verification flips on the verified badge
+  const badSelfie = await req('/users/me/verify-selfie', {
+    method: 'POST',
+    token: bob.token,
+    body: { selfie: 'data:image/jpeg;base64,' + 'A'.repeat(4000) },
+  });
+  ok(badSelfie.status === 400, 'A fake (non-image) selfie is rejected');
+
+  // Minimal real JPEG, padded past the minimum size — the server checks the magic bytes.
+  const jpeg = Buffer.from(
+    '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigD//2Q==',
+    'base64'
+  );
+  const paddedJpeg = Buffer.concat([jpeg, Buffer.alloc(4000)]);
+  const selfie = await req('/users/me/verify-selfie', {
+    method: 'POST',
+    token: bob.token,
+    body: { selfie: 'data:image/jpeg;base64,' + paddedJpeg.toString('base64') },
+  });
+  ok(selfie.status === 200 && selfie.data.user.verified === true, 'A valid selfie earns the verified badge');
+  ok(selfie.data.user.selfie_data === undefined, 'The stored selfie is never sent back to clients');
+
+  const bobPublic = await req(`/users/${bob.id}`, { token: maya.token });
+  ok(bobPublic.data.user.verified === true, 'Other students see the verified flag on the profile');
+  const matchesAfter = await req('/matches', { token: maya.token });
+  const bobMatchAfter = matchesAfter.data.matches.find((m) => m.user.id === bob.id);
+  ok(bobMatchAfter?.user.verified === true, 'Match cards carry the verified flag too');
+
   // Cleanup: remove the temporary skill Maya added for the test
   const mayaSkills = await req('/skills/mine', { token: maya.token });
   const temp = mayaSkills.data.skills.learn.find((s) => s.name === uniqueSkill);

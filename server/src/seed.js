@@ -41,13 +41,13 @@ const CATALOGUE = [
   ['Chess', 'Other'],
 ];
 
-function insertUser({ name, email, university, bio, color, credits, agoDays }) {
+function insertUser({ name, email, university, bio, color, credits, agoDays, verified = 0 }) {
   const info = db
     .prepare(
-      `INSERT INTO users (name, email, password_hash, university, bio, avatar_color, credits, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO users (name, email, password_hash, university, bio, avatar_color, credits, verified, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .run(name, email, hashPassword(DEMO_PASSWORD), university, bio, color, credits, ago(agoDays));
+    .run(name, email, hashPassword(DEMO_PASSWORD), university, bio, color, credits, verified, ago(agoDays));
   return Number(info.lastInsertRowid);
 }
 
@@ -101,6 +101,11 @@ export function seedDemoData() {
     credits: 10,
     agoDays: 40,
   });
+  /*
+   * Maya (the account we demo with) starts unverified so the selfie flow can
+   * be shown live; everyone else arrives already verified so the badge is
+   * visible on match cards and profiles out of the box.
+   */
   const alice = insertUser({
     name: 'Alice Novak',
     email: 'alice@demo.edu',
@@ -109,6 +114,7 @@ export function seedDemoData() {
     color: '#a78bfa',
     credits: 30,
     agoDays: 60,
+    verified: 1,
   });
   const diego = insertUser({
     name: 'Diego Ruiz',
@@ -118,6 +124,7 @@ export function seedDemoData() {
     color: '#f472b6',
     credits: 20,
     agoDays: 45,
+    verified: 1,
   });
   const priya = insertUser({
     name: 'Priya Sharma',
@@ -127,6 +134,7 @@ export function seedDemoData() {
     color: '#34d399',
     credits: 20,
     agoDays: 38,
+    verified: 1,
   });
   const tom = insertUser({
     name: 'Tom Becker',
@@ -136,6 +144,7 @@ export function seedDemoData() {
     color: '#fbbf24',
     credits: 10,
     agoDays: 25,
+    verified: 1,
   });
 
   addSkills(maya, [['Python', 4], ['React', 4]], [['Guitar', 1], ['Spanish', 2]]);

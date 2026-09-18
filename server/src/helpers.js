@@ -51,6 +51,7 @@ export function getProfile(userId, { includeEmail = false } = {}) {
     bio: u.bio,
     avatar_color: u.avatar_color,
     credits: u.credits,
+    verified: !!u.verified,
     created_at: u.created_at,
     rating: getRating(u.id),
     completed_swaps: getCompletedCount(u.id),
@@ -99,8 +100,8 @@ export function touchSwap(id) {
 
 const SWAP_SELECT = `
   SELECT sw.*,
-         f.name AS from_name, f.avatar_color AS from_color, f.university AS from_university,
-         t.name AS to_name,   t.avatar_color AS to_color,   t.university AS to_university,
+         f.name AS from_name, f.avatar_color AS from_color, f.university AS from_university, f.verified AS from_verified,
+         t.name AS to_name,   t.avatar_color AS to_color,   t.university AS to_university,   t.verified AS to_verified,
          ts.name AS teach_skill, ls.name AS learn_skill
   FROM swaps sw
   JOIN users f ON f.id = sw.from_user_id
@@ -122,8 +123,8 @@ function decorateSwap(row, viewerId, reviewedSwapIds) {
     i_teach: iAmSender ? row.teach_skill : row.learn_skill,
     i_learn: iAmSender ? row.learn_skill : row.teach_skill,
     counterpart: iAmSender
-      ? { id: row.to_user_id, name: row.to_name, avatar_color: row.to_color, university: row.to_university }
-      : { id: row.from_user_id, name: row.from_name, avatar_color: row.from_color, university: row.from_university },
+      ? { id: row.to_user_id, name: row.to_name, avatar_color: row.to_color, university: row.to_university, verified: !!row.to_verified }
+      : { id: row.from_user_id, name: row.from_name, avatar_color: row.from_color, university: row.from_university, verified: !!row.from_verified },
     my_review: reviewedSwapIds.some((r) => r.swap_id === row.id && r.reviewer_id === viewerId),
     their_review: reviewedSwapIds.some((r) => r.swap_id === row.id && r.reviewer_id !== viewerId),
   };

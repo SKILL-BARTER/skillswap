@@ -59,8 +59,30 @@ npm run seed         # drops everything and re-creates the sample students
 **Run the end-to-end flow test** (server must be running):
 
 ```bash
-npm run test:flow    # register → skills → match → request → accept → complete → review (23 checks)
+npm run test:flow    # register → skills → match → request → accept → complete → review + verification (30 checks)
 ```
+
+---
+
+## Students-only access & verification
+
+**Google sign-in, university domain only.** "Continue with Google" verifies the Google ID token
+server-side with Firebase Admin and only lets the account in when the e-mail domain belongs to a
+university: any `*.edu`, academic country domains (`*.ac.uk`, `*.edu.au`, `*.ac.jp`, …), or a domain
+in the allow-list in `server/src/university.js`. Personal Gmail/Outlook addresses get a friendly
+rejection. Registration with e-mail/password is gated the same way. Add extra domains without
+touching code via `ALLOWED_UNIVERSITY_DOMAINS=example.edu,another.ac.za` in the environment.
+
+Google credentials are loaded from `server/.env` (or `server/src/.env`) via
+`FIREBASE_SERVICE_ACCOUNT_PATH`, or simply drop `firebase-service-account.json` into `server/`.
+Firebase Admin is initialized lazily, so a missing credential disables only `/api/auth/google` —
+the rest of the API keeps running.
+
+**Selfie verification with the blue tick.** On the profile page a student can "Verify with a
+selfie": a live camera capture (with an upload fallback for devices without a camera) is submitted
+to `POST /api/users/me/verify-selfie`, which validates it is a real image (magic-byte checked,
+size-capped), stores it, and flips on `verified`. Verified students get a blue tick next to their
+name on match cards, swap cards and profiles. The stored photo is never sent back to clients.
 
 ---
 
@@ -129,6 +151,8 @@ pristine demo state.
 
 Pre-seeded storylines: a **pending request from Alice waiting for Maya**, an **in-progress swap** with
 Priya, a **completed swap with reviews** (Maya ↔ Tom), and rating history across the group.
+Alice, Diego, Priya and Tom arrive **selfie-verified** (blue tick); Maya starts unverified so the
+selfie flow can be demoed live.
 
 ## 3-minute demo script
 
@@ -144,6 +168,9 @@ Priya, a **completed swap with reviews** (Maya ↔ Tom), and rating history acro
 5. **Leave a review** → 5 stars + a comment; the trust tag flips to "You reviewed".
 6. **Profile / Alice's profile** → ratings, swap history and reviews are visible to everyone, and
    both students earned **+10 skill credits** for the completed swap.
+7. **Get verified** → on Maya's profile click *Verify with a selfie*, capture a quick photo and
+   submit — the blue tick instantly appears next to her name. (Alice's profile already shows the
+   tick and a "Verified student" chip.)
 
 ---
 
@@ -151,34 +178,39 @@ Priya, a **completed swap with reviews** (Maya ↔ Tom), and rating history acro
 
 ```
 server/
+  firebaseAdmin.js   lazy Firebase Admin init + .env loading (Google sign-in)
   src/index.js       Express app, static client serving, auto-seed
-  src/db.js          SQLite connection + full schema
-  src/auth.js        scrypt password hashing, sessions, requireAuth middleware
+  src/db.js          SQLite connection + full schema + migrations
+  src/auth.js        scrypt password hashing, sessions (30-day TTL), requireAuth
   src/matching.js    the explainable match-scoring engine
+  src/university.js  university e-mail domain gate
   src/helpers.js     profile/skill/swap query helpers
-  src/routes/        auth, skills, matches, swaps, users
+  src/routes/        auth, auth-google, skills, matches, swaps, users
   src/seed.js        demo students + swap storylines
   scripts/smoke.mjs  end-to-end flow test
 client/
   src/pages/         Login, Register, Dashboard, Discover, Swaps, Profile, UserProfile
-  src/components/    MatchCard, SwapCard, SwapRequestModal, ReviewModal, SkillEditor, NavBar, ui
+  src/components/    MatchCard, SwapCard, SwapRequestModal, ReviewModal, SkillEditor, NavBar,
+                     GoogleButton, SelfieVerify, ui
   src/styles/        design tokens + components
 ```
 
 ## Database schema
 
-- `users` — profile, `credits` (earned 10 per completed swap), avatar color
+- `users` — profile, `credits` (earned 10 per completed swap), avatar color, `verified` +
+  `selfie_data` (the selfie-verification backing store)
 - `skills` — normalised catalogue for clean matching
 - `user_skills` — `type = 'teach' | 'learn'`, level 1–5
 - `swaps` — `pending → accepted → completed` (plus `declined`, `cancelled`), skills + message
 - `reviews` — one per side per swap, drives every rating on the platform
-- `sessions` — bearer tokens
+- `sessions` — bearer tokens (expire after 30 days)
 
 ## API reference
 
 | Method & path | Purpose |
 | --- | --- |
 | `POST /api/auth/register` · `login` · `logout` | accounts & sessions |
+| `POST /api/auth/google` | Google sign-in (university-domain enforced) |
 | `GET /api/auth/me` | my profile + skills + rating |
 | `GET /api/skills` | skill catalogue (autocomplete) |
 | `GET/POST /api/skills/mine`, `PATCH/DELETE /api/skills/mine/:id` | manage my teach/learn skills |
@@ -186,10 +218,13 @@ client/
 | `GET/POST /api/swaps` | list my swaps / send a request |
 | `POST /api/swaps/:id/accept·decline·cancel·complete` | swap lifecycle |
 | `POST /api/swaps/:id/review` | rate a completed swap |
+| `POST /api/users/me/verify-selfie` | submit a selfie, earn the verified tick |
 | `GET/PATCH /api/users/me` · `GET /api/users/:id` | profile read/write |
 
 ## Deliberately out of scope (per the plan)
 
 No chat, no AI, no calendars, no payments. Skill credits exist as a lightweight reputation counter.
-The next things to add after the hackathon: in-app messaging, scheduling, university email
-verification, and negative-balance credit trading.
+University e-mail gating and selfie verification ship as of this build. The next things to add
+after the hackathon: in-app messaging, scheduling, automated face-match verification (the current
+check confirms a real image was submitted, not that it matches the student), and negative-balance
+credit trading.

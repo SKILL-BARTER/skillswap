@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import ReviewsList from '../components/ReviewsList.jsx';
-import { Avatar, CoinIcon, EmptyState, Notice, SkillChip, Stars } from '../components/ui.jsx';
+import { Avatar, CoinIcon, EmptyState, Notice, SkillChip, Stars, VerifiedBadge } from '../components/ui.jsx';
 
 export default function UserProfile() {
   const { id } = useParams();
@@ -42,7 +42,12 @@ export default function UserProfile() {
       <section className="card profile-hero">
         <Avatar user={user} size={84} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h1 style={{ marginBottom: 2 }}>{user.name}</h1>
+          <h1 style={{ marginBottom: 2 }}>
+            <span className="name-row">
+              {user.name}
+              {user.verified ? <VerifiedBadge size={20} /> : null}
+            </span>
+          </h1>
           <div className="muted">{user.university || 'University not set'}</div>
           {user.bio ? (
             <p className="bio" style={{ marginTop: 12 }}>
@@ -50,6 +55,11 @@ export default function UserProfile() {
             </p>
           ) : null}
           <div className="row" style={{ gap: 18, marginTop: 6 }}>
+            {user.verified ? (
+              <span className="verified-chip">
+                <VerifiedBadge size={14} title="Verified student" /> Verified student
+              </span>
+            ) : null}
             <span className="count-chip">
               {user.rating?.count ? (
                 <>

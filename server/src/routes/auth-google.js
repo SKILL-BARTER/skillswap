@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { db } from '../db.js';
 import { hashPassword, createSession } from '../auth.js';
 import admin from '../firebaseAdmin.js';
+import { isUniversityEmail, UNIVERSITY_EMAIL_REJECTION } from '../university.js';
 
 const router = express.Router();
 
@@ -28,6 +29,9 @@ router.post('/google', async (req, res) => {
   if (!email) return res.status(400).json({ error: 'Google account has no email' });
   if (decoded.email_verified === false) {
     return res.status(401).json({ error: 'Google email is not verified' });
+  }
+  if (!isUniversityEmail(email.toLowerCase())) {
+    return res.status(403).json({ error: UNIVERSITY_EMAIL_REJECTION });
   }
 
   let user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
