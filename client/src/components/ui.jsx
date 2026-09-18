@@ -109,7 +109,7 @@ export function Avatar({ user, size = 40, className = '' }) {
         src={user.avatar_url}
         alt=""
         className={`avatar avatar-photo ${className}`}
-        style={{ width: size, height: size }}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
         aria-hidden="true"
       />
     );
@@ -133,7 +133,7 @@ export function Avatar({ user, size = 40, className = '' }) {
 }
 
 /* ---------- Skill chip ---------- */
-function LevelPips({ level = 0 }) {
+export function LevelPips({ level = 0 }) {
   return (
     <span className="level-pips" title={`Level ${level}/5`}>
       {[1, 2, 3, 4, 5].map((i) => (
