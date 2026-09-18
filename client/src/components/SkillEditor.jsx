@@ -518,6 +518,7 @@ function SkillRow({ item, tone, onRemove, onChangeLevel, onMediaChange, showMedi
 }
 
 export default function SkillEditor({ skills, onChange }) {
+  const safeSkills = skills ?? { teach: [], learn: [] };
   const [catalogue, setCatalogue] = useState([]);
   const [teachName, setTeachName] = useState('');
   const [learnName, setLearnName] = useState('');
@@ -570,7 +571,7 @@ export default function SkillEditor({ skills, onChange }) {
     }
   }
 
-  const totalSkills = (skills.teach?.length || 0) + (skills.learn?.length || 0);
+  const totalSkills = (safeSkills.teach?.length || 0) + (safeSkills.learn?.length || 0);
 
   return (
     <div className="card pad">
@@ -620,10 +621,10 @@ export default function SkillEditor({ skills, onChange }) {
             <h3>
               <span className="legend-dot teach" />I can teach
             </h3>
-            <span className="count-chip">{skills.teach?.length || 0}</span>
+            <span className="count-chip">{safeSkills.teach?.length || 0}</span>
           </div>
           <div className="skill-list skill-list-rows">
-            {(skills.teach || []).map((item) => (
+            {(safeSkills.teach || []).map((item) => (
               <SkillRow
                 key={item.id}
                 item={item}
@@ -634,7 +635,7 @@ export default function SkillEditor({ skills, onChange }) {
                 onMediaChange={onChange}
               />
             ))}
-            {!skills.teach?.length ? (
+            {!safeSkills.teach?.length ? (
               <span className="muted small">Nothing yet — add a skill you could teach.</span>
             ) : null}
           </div>
@@ -665,10 +666,10 @@ export default function SkillEditor({ skills, onChange }) {
             <h3>
               <span className="legend-dot learn" />I want to learn
             </h3>
-            <span className="count-chip">{skills.learn?.length || 0}</span>
+            <span className="count-chip">{safeSkills.learn?.length || 0}</span>
           </div>
           <div className="skill-list skill-list-rows">
-            {(skills.learn || []).map((item) => (
+            {(safeSkills.learn || []).map((item) => (
               <SkillRow
                 key={item.id}
                 item={item}
@@ -679,7 +680,7 @@ export default function SkillEditor({ skills, onChange }) {
                 onMediaChange={onChange}
               />
             ))}
-            {!skills.learn?.length ? (
+            {!safeSkills.learn?.length ? (
               <span className="muted small">Nothing yet — add something you want to learn.</span>
             ) : null}
           </div>
