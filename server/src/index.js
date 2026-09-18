@@ -2,6 +2,7 @@ import express from 'express';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import cors from 'cors';
  
 import { db, initSchema } from './db.js';
 import { seedDemoData } from './seed.js';
@@ -23,6 +24,13 @@ if (userCount === 0) {
 }
  
 const app = express();
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://YOUR-NETLIFY-URL.netlify.app'
+  ],
+  credentials: true,
+}));
 app.use(express.json({ limit: '3mb' }));
  
 app.use('/api/auth', authRoutes);

@@ -1,4 +1,5 @@
 const TOKEN_KEY = 'skillswap_token';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
 
@@ -8,7 +9,7 @@ export const setToken = (token) => {
 };
 
 export async function api(path, { method = 'GET', body, token = getToken() } = {}) {
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_URL}/api${path}`, {
     method,
     headers: {
       ...(body ? { 'Content-Type': 'application/json' } : {}),
