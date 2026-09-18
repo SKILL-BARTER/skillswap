@@ -3,7 +3,7 @@ import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import ReviewsList from '../components/ReviewsList.jsx';
 import SkillEditor from '../components/SkillEditor.jsx';
-import { Avatar, CoinIcon, Notice, Stars } from '../components/ui.jsx';
+import { Avatar, CoinIcon, Modal, Notice, Stars } from '../components/ui.jsx';
 
 const AVATAR_COLORS = ['#22d3ee', '#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#60a5fa', '#fb7185'];
 
@@ -39,6 +39,7 @@ export default function Profile() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef(null);
+  const [avatarLightbox, setAvatarLightbox] = useState(false);
 
   useEffect(() => {
     api(`/users/${user.id}`)
@@ -136,7 +137,18 @@ export default function Profile() {
       {/* Profile hero */}
       <section className="card profile-hero">
         {!editing ? (
-          <Avatar user={{ ...user, avatar_color: color }} size={84} />
+          user.avatar_url ? (
+            <button
+              type="button"
+              onClick={() => setAvatarLightbox(true)}
+              aria-label="View larger profile photo"
+              style={{ padding: 0, border: 'none', background: 'none', cursor: 'pointer', borderRadius: '50%' }}
+            >
+              <Avatar user={{ ...user, avatar_color: color }} size={84} />
+            </button>
+          ) : (
+            <Avatar user={{ ...user, avatar_color: color }} size={84} />
+          )
         ) : (
           <div className="avatar-editor">
             <button
@@ -399,6 +411,23 @@ export default function Profile() {
           )}
         </div>
       </section>
+
+      {avatarLightbox && user.avatar_url ? (
+        <Modal title={`${user.name}'s profile photo`} onClose={() => setAvatarLightbox(false)}>
+          <img
+            src={user.avatar_url}
+            alt=""
+            style={{
+              display: 'block',
+              width: '100%',
+              maxHeight: '70vh',
+              objectFit: 'contain',
+              borderRadius: 8,
+              margin: '0 auto',
+            }}
+          />
+        </Modal>
+      ) : null}
 
       <SkillEditor skills={user.skills} onChange={(skills) => setUser({ ...user, skills })} />
 

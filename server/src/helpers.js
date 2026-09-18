@@ -1,12 +1,33 @@
 import { db } from './db.js';
 
-const mapSkill = (r) => ({
+const mapSkill = (r, media) => ({
   id: r.id,
   skill_id: r.skill_id,
   name: r.name,
   category: r.category,
   level: r.level,
+  media: media[r.id] || [],
 });
+
+// One query for all rows instead of one per skill, keyed by user_skills.id.
+function getMediaByUserSkillId(userSkillIds) {
+  if (!userSkillIds.length) return {};
+  const placeholders = userSkillIds.map(() => '?').join(',');
+  const rows = db
+    .prepare(
+      `SELECT id, user_skill_id, type, url, caption, created_at
+       FROM skill_media
+       WHERE user_skill_id IN (${placeholders})
+       ORDER BY created_at`
+    )
+    .all(...userSkillIds);
+  const byId = {};
+  for (const r of rows) {
+    const item = { id: r.id, type: r.type, url: r.url, caption: r.caption };
+    (byId[r.user_skill_id] ||= []).push(item);
+  }
+  return byId;
+}
 
 export function getUserSkills(userId) {
   const rows = db
@@ -17,9 +38,10 @@ export function getUserSkills(userId) {
        ORDER BY s.name`
     )
     .all(userId);
+  const media = getMediaByUserSkillId(rows.map((r) => r.id));
   return {
-    teach: rows.filter((r) => r.type === 'teach').map(mapSkill),
-    learn: rows.filter((r) => r.type === 'learn').map(mapSkill),
+    teach: rows.filter((r) => r.type === 'teach').map((r) => mapSkill(r, media)),
+    learn: rows.filter((r) => r.type === 'learn').map((r) => mapSkill(r, media)),
   };
 }
 
@@ -157,3 +179,4 @@ export function getSwapsFor(userId) {
     .all(...ids);
   return rows.map((r) => decorateSwap(r, userId, reviewed));
 }
+ 

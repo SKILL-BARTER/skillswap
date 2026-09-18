@@ -58,6 +58,21 @@ CREATE TABLE IF NOT EXISTS user_skills (
   UNIQUE (user_id, skill_id, type)
 );
  
+-- Photo/video proof attached to a specific user_skills row, so a viewer can
+-- see evidence for "Guitar" specifically rather than a generic profile gallery.
+-- Images are stored as base64 data URLs (like the avatar). Videos are stored
+-- as a link to an external host (YouTube/Vimeo/Loom) rather than uploaded
+-- directly — raw video files are too large for this app's JSON-body upload
+-- approach and would need real file storage/multipart handling instead.
+CREATE TABLE IF NOT EXISTS skill_media (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_skill_id INTEGER NOT NULL REFERENCES user_skills(id) ON DELETE CASCADE,
+  type          TEXT NOT NULL CHECK (type IN ('image', 'video')),
+  url           TEXT NOT NULL,
+  caption       TEXT NOT NULL DEFAULT '',
+  created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+);
+ 
 CREATE TABLE IF NOT EXISTS swaps (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,
   from_user_id   INTEGER NOT NULL REFERENCES users(id),
@@ -91,6 +106,7 @@ CREATE TABLE IF NOT EXISTS sessions (
  
 CREATE INDEX IF NOT EXISTS idx_user_skills_user ON user_skills(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_skills_skill ON user_skills(skill_id);
+CREATE INDEX IF NOT EXISTS idx_skill_media_user_skill ON skill_media(user_skill_id);
 CREATE INDEX IF NOT EXISTS idx_swaps_users ON swaps(from_user_id, to_user_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_reviewee ON reviews(reviewee_id);
 `;
@@ -133,3 +149,4 @@ export function resetDb() {
   `);
   initSchema();
 }
+ 
