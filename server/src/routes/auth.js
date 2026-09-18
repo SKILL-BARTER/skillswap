@@ -1,52 +1,40 @@
-import express from 'express';
-import crypto from 'node:crypto';
+﻿import { Router } from 'express';
 import { db } from '../db.js';
-import { hashPassword, createSession } from '../auth.js';
-import admin from '../firebaseAdmin.js';
+import { verifyPassword, createSession, destroySession, requireAuth } from '../auth.js';
+import { getProfile } from '../helpers.js';
 
-const router = express.Router();
+const router = Router();
 
-const AVATAR_COLORS = ['#6366f1', '#22d3ee', '#a78bfa', '#f472b6', '#34d399', '#fbbf24'];
+const DEMO_EMAIL_SUFFIX = '@demo.edu';
 
-function publicUser(user) {
-  const { password_hash, ...rest } = user;
-  return rest;
-}
+router.post('/register', (req, res) => {
+  res.status(403).json({ error: 'Please create your account with Google sign-in' });
+});
 
-router.post('/google', async (req, res) => {
-  const { idToken } = req.body || {};
-  if (!idToken) return res.status(400).json({ error: 'Missing idToken' });
+router.post('/login', (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+  const cleanEmail = String(email).trim().toLowerCase();
 
-  let decoded;
-  try {
-    decoded = await admin.auth().verifyIdToken(idToken);
-  } catch {
-    return res.status(401).json({ error: 'Invalid Google token' });
+  if (!cleanEmail.endsWith(DEMO_EMAIL_SUFFIX)) {
+    return res.status(403).json({ error: 'Please sign in with Google' });
   }
 
-  const email = decoded.email;
-  if (!email) return res.status(400).json({ error: 'Google account has no email' });
-  if (decoded.email_verified === false) {
-    return res.status(401).json({ error: 'Google email is not verified' });
+  const user = db.prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE').get(cleanEmail);
+  if (!user || !verifyPassword(password, user.password_hash)) {
+    return res.status(401).json({ error: 'Wrong email or password' });
   }
-
-  let user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-
-  if (!user) {
-    const name = decoded.name || email.split('@')[0];
-    const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-    // Google-only accounts don't need a usable password. We still store a
-    // hash (the column is NOT NULL) but it's random and never checked
-    // against, so password login stays impossible for this account.
-    const unusedPasswordHash = hashPassword(crypto.randomBytes(32).toString('hex'));
-    const info = db
-      .prepare('INSERT INTO users (name, email, password_hash, avatar_color) VALUES (?, ?, ?, ?)')
-      .run(name, email, unusedPasswordHash, avatarColor);
-    user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
-  }
-
   const token = createSession(user.id);
-  res.json({ token, user: publicUser(user) });
+  res.json({ token, user: getProfile(user.id, { includeEmail: true }) });
+});
+
+router.post('/logout', requireAuth, (req, res) => {
+  destroySession(req.token);
+  res.json({ ok: true });
+});
+
+router.get('/me', requireAuth, (req, res) => {
+  res.json({ user: getProfile(req.user.id, { includeEmail: true }) });
 });
 
 export default router;

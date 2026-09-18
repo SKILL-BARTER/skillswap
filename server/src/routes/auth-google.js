@@ -1,8 +1,8 @@
-import express from 'express';
+﻿import express from 'express';
 import crypto from 'node:crypto';
 import { db } from '../db.js';
 import { hashPassword, createSession } from '../auth.js';
-import admin from '../firebaseAdmin.js';
+import { getFirebaseAuth } from '../firebaseAdmin.js';
 import { isUniversityEmail, UNIVERSITY_EMAIL_REJECTION } from '../university.js';
 
 const router = express.Router();
@@ -20,7 +20,7 @@ router.post('/google', async (req, res) => {
 
   let decoded;
   try {
-    decoded = await admin.auth().verifyIdToken(idToken);
+    decoded = await getFirebaseAuth().verifyIdToken(idToken);
   } catch {
     return res.status(401).json({ error: 'Invalid Google token' });
   }
@@ -39,9 +39,6 @@ router.post('/google', async (req, res) => {
   if (!user) {
     const name = decoded.name || email.split('@')[0];
     const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-    // Google-only accounts don't need a usable password. We still store a
-    // hash (the column is NOT NULL) but it's random and never checked
-    // against, so password login stays impossible for this account.
     const unusedPasswordHash = hashPassword(crypto.randomBytes(32).toString('hex'));
     const info = db
       .prepare('INSERT INTO users (name, email, password_hash, avatar_color) VALUES (?, ?, ?, ?)')
