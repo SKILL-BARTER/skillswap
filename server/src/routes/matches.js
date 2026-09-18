@@ -8,7 +8,7 @@ const router = Router();
 // Ranked, explainable matches for the signed-in student.
 router.get('/', requireAuth, (req, res) => {
   const users = db
-    .prepare('SELECT id, name, university, bio, avatar_color, credits FROM users')
+    .prepare('SELECT id, name, university, bio, avatar_color, credits, verified FROM users')
     .all();
   const skillRows = db
     .prepare(

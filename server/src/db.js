@@ -14,6 +14,9 @@ db.exec('PRAGMA foreign_keys = ON;');
  * Skill-Swap schema
  *
  * users       - students (auth + profile + optional skill credits)
+ *              verified / selfie_data back the selfie-verification badge:
+ *              a student is marked verified once they submit a live selfie,
+ *              which is stored so a human can re-check it later if needed.
  * skills      - normalized catalogue ("Guitar", "React", ...)
  * user_skills - a user either teaches or wants to learn a skill (type = 'teach' | 'learn')
  * swaps       - a request to exchange skills; status walks pending -> accepted -> completed
@@ -39,6 +42,8 @@ CREATE TABLE IF NOT EXISTS users (
   github_url    TEXT NOT NULL DEFAULT '',
   portfolio_url TEXT NOT NULL DEFAULT '',
   credits       INTEGER NOT NULL DEFAULT 0,
+  verified      INTEGER NOT NULL DEFAULT 0,
+  selfie_data   TEXT,
   created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
  
@@ -136,8 +141,34 @@ function migrateUserColumns() {
 export function initSchema() {
   db.exec(SCHEMA);
   migrateUserColumns();
+  migrateVerificationColumns();
 }
- 
+
+/*
+ * Lightweight migration for databases created before verified/selfie_data
+ * existed (CREATE TABLE IF NOT EXISTS never alters an existing table).
+ */
+function migrateVerificationColumns() {
+  const columns = new Set(db.prepare('PRAGMA table_info(users)').all().map((c) => c.name));
+  const added = [];
+
+  if (!columns.has('verified')) {
+    db.exec('ALTER TABLE users ADD COLUMN verified INTEGER NOT NULL DEFAULT 0');
+    added.push('verified');
+  }
+  if (!columns.has('selfie_data')) {
+    db.exec('ALTER TABLE users ADD COLUMN selfie_data TEXT');
+    added.push('selfie_data');
+  }
+
+  // One-time: flag the demo students (except maya@demo.edu, the account we
+  // demo the selfie flow with) as verified so the badge is visible out of the box.
+  if (added.includes('verified')) {
+    db.exec(
+      "UPDATE users SET verified = 1 WHERE email LIKE '%@demo.edu' AND email != 'maya@demo.edu'"
+    );
+  }
+}
 export function resetDb() {
   db.exec(`
     DROP TABLE IF EXISTS reviews;

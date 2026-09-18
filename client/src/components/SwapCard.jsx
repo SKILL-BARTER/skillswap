@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, emitSwapsChanged } from '../api.js';
-import { Avatar, CheckIcon, Notice, StatusPill, SwapIcon } from './ui.jsx';
+import { Avatar, CheckIcon, Notice, StatusPill, SwapIcon, VerifiedBadge } from './ui.jsx';
 
 function TrustTags({ swap }) {
   if (swap.status !== 'completed') return null;
@@ -62,7 +62,10 @@ export default function SwapCard({ swap, onUpdate, onReview }) {
         <div className="swap-head">
           <strong>
             <Link to={`/u/${swap.counterpart.id}`} className="link">
-              {swap.counterpart.name}
+              <span className="name-row">
+                {swap.counterpart.name}
+                {swap.counterpart.verified ? <VerifiedBadge size={14} /> : null}
+              </span>
             </Link>
           </strong>
           <StatusPill status={swap.status} />

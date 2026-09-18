@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import AuthShell from '../components/AuthShell.jsx';
+import GoogleButton from '../components/GoogleButton.jsx';
 import { Avatar, Notice } from '../components/ui.jsx';
 
 export default function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [demo, setDemo] = useState(null);
@@ -48,46 +47,7 @@ export default function Login() {
         </div>
       ) : null}
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          doLogin(email, password);
-        }}
-      >
-        <div className="field">
-          <label htmlFor="login-email">University email</label>
-          <input
-            id="login-email"
-            className="input"
-            type="email"
-            autoComplete="email"
-            placeholder="you@university.edu"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="login-password">Password</label>
-          <input
-            id="login-password"
-            className="input"
-            type="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button className="btn btn-primary btn-block" type="submit" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
-
-      <p className="auth-switch" style={{ marginTop: 16 }}>
-        New here? <Link to="/register">Create an account</Link>
-      </p>
+      <GoogleButton label="Continue with Google (university email)" />
 
       {demo?.accounts?.length ? (
         <div className="demo-box">

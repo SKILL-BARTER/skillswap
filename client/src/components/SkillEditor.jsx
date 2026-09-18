@@ -389,7 +389,7 @@ function AddProofForm({ userSkillId, onAdded, onCancel }) {
   );
 }
 
-function SkillRow({ item, tone, onRemove, onChangeLevel, onMediaChange }) {
+function SkillRow({ item, tone, onRemove, onChangeLevel, onMediaChange, showMedia = true }) {
   const [addingProof, setAddingProof] = useState(false);
   const [removingMediaId, setRemovingMediaId] = useState(null);
   const [levelBusy, setLevelBusy] = useState(false);
@@ -437,77 +437,81 @@ function SkillRow({ item, tone, onRemove, onChangeLevel, onMediaChange }) {
         </button>
       </div>
 
-      {media.length ? (
-        <div className="media-strip" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '8px 0' }}>
-          {media.map((m) => (
-            <MediaThumb
-              key={m.id}
-              item={m}
-              onRemove={() => removeMedia(m)}
-              onOpen={() => (m.type === 'image' || !isExternalVideo(m.url)) && setLightboxItem(m)}
-              removing={removingMediaId === m.id}
-            />
-          ))}
-        </div>
-      ) : null}
+      {showMedia ? (
+        <>
+          {media.length ? (
+            <div className="media-strip" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '8px 0' }}>
+              {media.map((m) => (
+                <MediaThumb
+                  key={m.id}
+                  item={m}
+                  onRemove={() => removeMedia(m)}
+                  onOpen={() => (m.type === 'image' || !isExternalVideo(m.url)) && setLightboxItem(m)}
+                  removing={removingMediaId === m.id}
+                />
+              ))}
+            </div>
+          ) : null}
 
-      {addingProof ? (
-        <AddProofForm
-          userSkillId={item.id}
-          onAdded={(skills) => {
-            onMediaChange(skills);
-          }}
-          onCancel={() => setAddingProof(false)}
-        />
-      ) : media.length < MAX_MEDIA_PER_SKILL ? (
-        <button type="button" className="btn btn-ghost btn-sm proof-toggle" onClick={() => setAddingProof(true)}>
-          <PlusIcon size={13} />
-          {media.length ? 'Add more proof' : 'Add proof (photo or video)'}
-        </button>
-      ) : (
-        <span className="muted small">Max {MAX_MEDIA_PER_SKILL} items reached</span>
-      )}
-
-      {lightboxItem ? (
-        <Modal
-          title={`${item.name} — proof ${lightboxItem.type === 'image' ? 'photo' : 'clip'}`}
-          onClose={() => setLightboxItem(null)}
-        >
-          {lightboxItem.type === 'image' ? (
-            <img
-              src={lightboxItem.url}
-              alt={lightboxItem.caption || ''}
-              style={{
-                display: 'block',
-                width: '100%',
-                maxHeight: '70vh',
-                objectFit: 'contain',
-                borderRadius: 8,
-                margin: '0 auto',
+          {addingProof ? (
+            <AddProofForm
+              userSkillId={item.id}
+              onAdded={(skills) => {
+                onMediaChange(skills);
               }}
+              onCancel={() => setAddingProof(false)}
             />
-          ) : (
-            <video
-              src={lightboxItem.url}
-              controls
-              autoPlay
-              playsInline
-              style={{ display: 'block', width: '100%', maxHeight: '70vh', borderRadius: 8, margin: '0 auto' }}
-            />
-          )}
-          <div className="row" style={{ marginTop: 12, justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={() => {
-                removeMedia(lightboxItem);
-                setLightboxItem(null);
-              }}
-            >
-              Remove this {lightboxItem.type === 'image' ? 'photo' : 'clip'}
+          ) : media.length < MAX_MEDIA_PER_SKILL ? (
+            <button type="button" className="btn btn-ghost btn-sm proof-toggle" onClick={() => setAddingProof(true)}>
+              <PlusIcon size={13} />
+              {media.length ? 'Add more proof' : 'Add proof (photo or video)'}
             </button>
-          </div>
-        </Modal>
+          ) : (
+            <span className="muted small">Max {MAX_MEDIA_PER_SKILL} items reached</span>
+          )}
+
+          {lightboxItem ? (
+            <Modal
+              title={`${item.name} — proof ${lightboxItem.type === 'image' ? 'photo' : 'clip'}`}
+              onClose={() => setLightboxItem(null)}
+            >
+              {lightboxItem.type === 'image' ? (
+                <img
+                  src={lightboxItem.url}
+                  alt={lightboxItem.caption || ''}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    maxHeight: '70vh',
+                    objectFit: 'contain',
+                    borderRadius: 8,
+                    margin: '0 auto',
+                  }}
+                />
+              ) : (
+                <video
+                  src={lightboxItem.url}
+                  controls
+                  autoPlay
+                  playsInline
+                  style={{ display: 'block', width: '100%', maxHeight: '70vh', borderRadius: 8, margin: '0 auto' }}
+                />
+              )}
+              <div className="row" style={{ marginTop: 12, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => {
+                    removeMedia(lightboxItem);
+                    setLightboxItem(null);
+                  }}
+                >
+                  Remove this {lightboxItem.type === 'image' ? 'photo' : 'clip'}
+                </button>
+              </div>
+            </Modal>
+          ) : null}
+        </>
       ) : null}
     </div>
   );
@@ -598,8 +602,20 @@ export default function SkillEditor({ skills, onChange }) {
         </div>
       ) : null}
 
-      <div className="skill-columns">
-        <section>
+      <div
+        className="skill-columns"
+        style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}
+      >
+        <section
+          style={{
+            flex: '1 1 320px',
+            minWidth: 280,
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 12,
+            padding: 16,
+            background: 'rgba(255,255,255,0.02)',
+          }}
+        >
           <div className="skill-col-head">
             <h3>
               <span className="legend-dot teach" />I can teach
@@ -612,6 +628,7 @@ export default function SkillEditor({ skills, onChange }) {
                 key={item.id}
                 item={item}
                 tone="teach"
+                showMedia
                 onRemove={() => remove(item)}
                 onChangeLevel={changeLevel}
                 onMediaChange={onChange}
@@ -634,7 +651,16 @@ export default function SkillEditor({ skills, onChange }) {
           <p className="hint">These are the skills other students can match with you for. Add a photo or video to back it up.</p>
         </section>
 
-        <section>
+        <section
+          style={{
+            flex: '1 1 320px',
+            minWidth: 280,
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 12,
+            padding: 16,
+            background: 'rgba(255,255,255,0.02)',
+          }}
+        >
           <div className="skill-col-head">
             <h3>
               <span className="legend-dot learn" />I want to learn
@@ -647,6 +673,7 @@ export default function SkillEditor({ skills, onChange }) {
                 key={item.id}
                 item={item}
                 tone="learn"
+                showMedia={false}
                 onRemove={() => remove(item)}
                 onChangeLevel={changeLevel}
                 onMediaChange={onChange}
@@ -666,7 +693,7 @@ export default function SkillEditor({ skills, onChange }) {
             busy={busy}
             placeholder="e.g. Guitar"
           />
-          <p className="hint">Level is where you are today — 1 means total beginner.</p>
+          <p className="hint">Level is where you are today — 1 means total beginner. Photos and videos aren't needed here — save proof for skills you teach.</p>
         </section>
       </div>
 
