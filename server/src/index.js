@@ -27,9 +27,8 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://YOUR-NETLIFY-URL.netlify.app'
-  ],
-  credentials: true,
+    'https://visionary-cranachan-ed343f.netlify.app'
+  ]
 }));
 app.use(express.json({ limit: '3mb' }));
  
