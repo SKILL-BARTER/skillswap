@@ -39,11 +39,8 @@ export default function Profile() {
   const [avatarError, setAvatarError] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-<<<<<<< HEAD
-  const [verifyOpen, setVerifyOpen] = useState(false);
-=======
+   const [verifyOpen, setVerifyOpen] = useState(false);
   const fileInputRef = useRef(null);
->>>>>>> 6ac0c7675556cc9e2f95f9609d238cd635a0b55b
 
   useEffect(() => {
     api(`/users/${user.id}`)
