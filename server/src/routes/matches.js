@@ -2,21 +2,41 @@ import { Router } from 'express';
 import { db } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { rankMatches } from '../matching.js';
-
+ 
 const router = Router();
-
+ 
 // Ranked, explainable matches for the signed-in student.
 router.get('/', requireAuth, (req, res) => {
   const users = db
-    .prepare('SELECT id, name, university, bio, avatar_color, credits, verified FROM users')
+    .prepare('SELECT id, name, university, bio, avatar_color, avatar_url, credits, verified FROM users')
     .all();
   const skillRows = db
     .prepare(
-      `SELECT us.user_id, us.type, us.level, s.id AS skill_id, s.name, s.category
+      `SELECT us.id AS user_skill_id, us.user_id, us.type, us.level, s.id AS skill_id, s.name, s.category
        FROM user_skills us JOIN skills s ON s.id = us.skill_id
        ORDER BY s.name`
     )
     .all();
+ 
+  // One extra query for all proof media, keyed by user_skills.id, instead of
+  // a per-skill lookup — same batching approach as helpers.js's getUserSkills.
+  const userSkillIds = skillRows.map((r) => r.user_skill_id);
+  const mediaByUserSkillId = {};
+  if (userSkillIds.length) {
+    const placeholders = userSkillIds.map(() => '?').join(',');
+    const mediaRows = db
+      .prepare(
+        `SELECT id, user_skill_id, type, url, caption
+         FROM skill_media
+         WHERE user_skill_id IN (${placeholders})
+         ORDER BY created_at`
+      )
+      .all(...userSkillIds);
+    for (const m of mediaRows) {
+      (mediaByUserSkillId[m.user_skill_id] ||= []).push({ id: m.id, type: m.type, url: m.url, caption: m.caption });
+    }
+  }
+ 
   const ratings = db
     .prepare(
       `SELECT reviewee_id AS user_id, ROUND(AVG(rating), 1) AS avg, COUNT(*) AS count
@@ -32,10 +52,10 @@ router.get('/', requireAuth, (req, res) => {
        ) GROUP BY user_id`
     )
     .all();
-
+ 
   const ratingOf = new Map(ratings.map((r) => [r.user_id, { avg: r.avg, count: r.count }]));
   const completedOf = new Map(completed.map((r) => [r.user_id, r.n]));
-
+ 
   const profiles = new Map(
     users.map((u) => [
       u.id,
@@ -47,19 +67,26 @@ router.get('/', requireAuth, (req, res) => {
       },
     ])
   );
-
+ 
   for (const s of skillRows) {
     const p = profiles.get(s.user_id);
     if (!p) continue;
-    const entry = { skill_id: s.skill_id, name: s.name, category: s.category, level: s.level };
+    const entry = {
+      skill_id: s.skill_id,
+      name: s.name,
+      category: s.category,
+      level: s.level,
+      media: mediaByUserSkillId[s.user_skill_id] || [],
+    };
     p.skills[s.type].push(entry);
   }
-
+ 
   const me = profiles.get(req.user.id);
   if (!me) return res.status(404).json({ error: 'User not found' });
   const others = [...profiles.values()].filter((u) => u.id !== req.user.id);
-
+ 
   res.json({ matches: rankMatches(me, others) });
 });
-
+ 
 export default router;
+ 

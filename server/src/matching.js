@@ -77,6 +77,7 @@ export function rankMatches(me, others) {
         university: other.university,
         bio: other.bio,
         avatar_color: other.avatar_color,
+        avatar_url: other.avatar_url,
         credits: other.credits,
         verified: !!other.verified,
         rating: other.rating,

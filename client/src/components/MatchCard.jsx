@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Avatar, CheckIcon, MatchRing, Stars, SwapIcon, VerifiedBadge } from './ui.jsx';
+import { Avatar, CheckIcon, MatchRing, Modal, Stars, SwapIcon, VerifiedBadge } from './ui.jsx';
 
 const Chevron = ({ up }) => (
   <svg
@@ -39,6 +39,82 @@ export function ScoreBreakdown({ breakdown }) {
             <b>{Math.min(100, breakdown.reduce((s, r) => s + r.points, 0))}%</b>
           </div>
         </div>
+      ) : null}
+    </div>
+  );
+}
+
+// Small proof-photo strip for the skill they'd be teaching you, with a
+// click-to-enlarge lightbox for images. Self-contained inline styles so it
+// doesn't depend on any stylesheet being present.
+function TeachProof({ skill }) {
+  const [lightbox, setLightbox] = useState(null);
+  const media = (skill?.media || []).slice(0, 3);
+  if (!media.length) return null;
+
+  const thumbStyle = {
+    width: 46,
+    height: 46,
+    borderRadius: 8,
+    overflow: 'hidden',
+    flex: 'none',
+    background: 'rgba(255,255,255,0.06)',
+  };
+
+  return (
+    <div className="row" style={{ gap: 6, marginTop: 8 }}>
+      {media.map((m) =>
+        m.type === 'image' ? (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => setLightbox(m)}
+            aria-label={`View proof photo for ${skill.name}`}
+            style={{ ...thumbStyle, padding: 0, border: 'none', cursor: 'pointer' }}
+          >
+            <img
+              src={m.url}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          </button>
+        ) : (
+          <a
+            key={m.id}
+            href={m.url}
+            target="_blank"
+            rel="noreferrer noopener"
+            style={{
+              ...thumbStyle,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'inherit',
+              textDecoration: 'none',
+              fontSize: 15,
+            }}
+            aria-label={`Watch proof video for ${skill.name}`}
+          >
+            ▶
+          </a>
+        )
+      )}
+
+      {lightbox ? (
+        <Modal title={`${skill.name} — proof photo`} onClose={() => setLightbox(null)}>
+          <img
+            src={lightbox.url}
+            alt=""
+            style={{
+              display: 'block',
+              width: '100%',
+              maxHeight: '70vh',
+              objectFit: 'contain',
+              borderRadius: 8,
+              margin: '0 auto',
+            }}
+          />
+        </Modal>
       ) : null}
     </div>
   );
@@ -90,17 +166,20 @@ export default function MatchCard({ match, onRequest }) {
         </ul>
 
         {suggestion ? (
-          <div className="exchange">
-            <span>
-              You teach <b>{suggestion.teach.name}</b>
-            </span>
-            <span className="exchange-arrow">
-              <SwapIcon size={15} />
-            </span>
-            <span>
-              You learn <b>{suggestion.learn.name}</b>
-            </span>
-          </div>
+          <>
+            <div className="exchange">
+              <span>
+                You teach <b>{suggestion.teach.name}</b>
+              </span>
+              <span className="exchange-arrow">
+                <SwapIcon size={15} />
+              </span>
+              <span>
+                You learn <b>{suggestion.learn.name}</b>
+              </span>
+            </div>
+            <TeachProof skill={suggestion.teach} />
+          </>
         ) : null}
 
         <ScoreBreakdown breakdown={breakdown} />

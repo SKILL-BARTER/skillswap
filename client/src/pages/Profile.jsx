@@ -2,10 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import ReviewsList from '../components/ReviewsList.jsx';
-import SelfieVerify from '../components/SelfieVerify.jsx';
 import SkillEditor from '../components/SkillEditor.jsx';
-
-import { Avatar, CameraIcon, CoinIcon, Modal, Notice, Stars, VerifiedBadge } from '../components/ui.jsx';
+import { Avatar, CapIcon, CoinIcon, LinkIcon, Modal, Notice, PinIcon, Stars } from '../components/ui.jsx';
+import '../styles/skill-profile-polish.css';
 
 const AVATAR_COLORS = ['#22d3ee', '#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#60a5fa', '#fb7185'];
 
@@ -40,7 +39,6 @@ export default function Profile() {
   const [avatarError, setAvatarError] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-   const [verifyOpen, setVerifyOpen] = useState(false);
   const fileInputRef = useRef(null);
   const [avatarLightbox, setAvatarLightbox] = useState(false);
 
@@ -188,18 +186,25 @@ export default function Profile() {
             <>
               <div className="spread">
                 <div>
-                  <h1 style={{ marginBottom: 2 }}>
-                    <span className="name-row">
-                      {user.name}
-                      {user.verified ? <VerifiedBadge size={20} /> : null}
-                    </span>
-                  </h1>
+                  <h1 style={{ marginBottom: 2 }}>{user.name}</h1>
                   <div className="muted">
                     {user.university || 'University not set'} · {user.email}
                   </div>
                   {detailLine ? (
-                    <div className="muted small" style={{ marginTop: 4 }}>
-                      {detailLine}
+                    <div className="detail-line" style={{ marginTop: 4 }}>
+                      {user.degree ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <CapIcon /> {user.degree}
+                        </span>
+                      ) : null}
+                      {user.degree && (user.year_of_study || user.campus) ? <span className="detail-sep">·</span> : null}
+                      {user.year_of_study ? <span>{user.year_of_study}</span> : null}
+                      {user.year_of_study && user.campus ? <span className="detail-sep">·</span> : null}
+                      {user.campus ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <PinIcon /> {user.campus}
+                        </span>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
@@ -228,10 +233,10 @@ export default function Profile() {
               ) : null}
 
               {links.length ? (
-                <div className="row" style={{ gap: 14, marginTop: 8 }}>
+                <div className="links-row" style={{ marginTop: 8 }}>
                   {links.map((l) => (
                     <a key={l.label} href={l.href} target="_blank" rel="noreferrer noopener" className="link">
-                      {l.label}
+                      <LinkIcon /> {l.label}
                     </a>
                   ))}
                 </div>
@@ -357,10 +362,11 @@ export default function Profile() {
                   <input
                     id="pf-linkedin"
                     className="input"
-                    type="url"
+                    type="text"
+                    inputMode="url"
                     value={form.linkedin_url}
                     onChange={set('linkedin_url')}
-                    placeholder="https://linkedin.com/in/…"
+                    placeholder="linkedin.com/in/…"
                   />
                 </div>
                 <div className="field" style={{ flex: 1 }}>
@@ -368,10 +374,11 @@ export default function Profile() {
                   <input
                     id="pf-github"
                     className="input"
-                    type="url"
+                    type="text"
+                    inputMode="url"
                     value={form.github_url}
                     onChange={set('github_url')}
-                    placeholder="https://github.com/…"
+                    placeholder="github.com/…"
                   />
                 </div>
               </div>
@@ -381,10 +388,11 @@ export default function Profile() {
                 <input
                   id="pf-portfolio"
                   className="input"
-                  type="url"
+                  type="text"
+                  inputMode="url"
                   value={form.portfolio_url}
                   onChange={set('portfolio_url')}
-                  placeholder="https://your-site.com"
+                  placeholder="your-site.com"
                 />
               </div>
 
@@ -435,44 +443,6 @@ export default function Profile() {
             }}
           />
         </Modal>
-      ) : null}
-
-      {/* Selfie verification */}
-      {user.verified ? (
-        <section className="card verify-card">
-          <span className="verify-ico">
-            <VerifiedBadge size={24} title="Verified student" />
-          </span>
-          <div style={{ flex: 1, minWidth: '22ch' }}>
-            <strong>Verified student</strong>
-            <p className="muted" style={{ margin: '4px 0 0' }}>
-              Your selfie has been checked — the verified tick shows next to your name everywhere.
-            </p>
-          </div>
-        </section>
-      ) : (
-        <section className="card verify-card">
-          <span className="verify-ico">
-            <CameraIcon size={22} />
-          </span>
-          <div style={{ flex: 1, minWidth: '22ch' }}>
-            <strong>Get the verified tick</strong>
-            <p className="muted" style={{ margin: '4px 0 0' }}>
-              Take a quick selfie so other students know they're trading with a real person. Takes
-              about ten seconds.
-            </p>
-          </div>
-          <button className="btn btn-primary" onClick={() => setVerifyOpen(true)}>
-            Verify with a selfie
-          </button>
-        </section>
-      )}
-
-      {verifyOpen ? (
-        <SelfieVerify
-          onClose={() => setVerifyOpen(false)}
-          onVerified={(u) => setUser(u)}
-        />
       ) : null}
 
       <SkillEditor skills={user.skills} onChange={(skills) => setUser({ ...user, skills })} />
