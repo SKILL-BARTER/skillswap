@@ -14,8 +14,8 @@ Backend API: https://skillswap-szay.onrender.com
 
 ## Project Documents
 
+- [SkillSwap Pitch Deck](docs/SkillSwap_Pitch_Deck.pptx)
 - [SkillSwap Presentation Playbook](docs/SkillSwap_Presentation_Playbook.docx)
-
 ---
 
 ## The pitch (for judges)
