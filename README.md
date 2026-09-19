@@ -6,6 +6,12 @@ the app finds the classmates on the other side of that trade, they swap, complet
 Built for the Skill-Swap hackathon. Stack: React + Vite (client), Express (API), SQLite via Node's
 built-in `node:sqlite` (zero native dependencies).
 
+## Live Demo
+
+Frontend: https://visionary-cranachan-ed343f.netlify.app
+
+Backend API: https://skillswap-szay.onrender.com
+
 ---
 
 ## The pitch (for judges)
