@@ -3,8 +3,7 @@ import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import ReviewsList from '../components/ReviewsList.jsx';
 import SkillEditor from '../components/SkillEditor.jsx';
-import { Avatar, CapIcon, CoinIcon, LinkIcon, Modal, Notice, PinIcon, Stars } from '../components/ui.jsx';
-import '../styles/skill-profile-polish.css';
+import { Avatar, CoinIcon, Modal, Notice, Stars } from '../components/ui.jsx';
 
 const AVATAR_COLORS = ['#22d3ee', '#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#60a5fa', '#fb7185'];
 
@@ -191,20 +190,8 @@ export default function Profile() {
                     {user.university || 'University not set'} · {user.email}
                   </div>
                   {detailLine ? (
-                    <div className="detail-line" style={{ marginTop: 4 }}>
-                      {user.degree ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                          <CapIcon /> {user.degree}
-                        </span>
-                      ) : null}
-                      {user.degree && (user.year_of_study || user.campus) ? <span className="detail-sep">·</span> : null}
-                      {user.year_of_study ? <span>{user.year_of_study}</span> : null}
-                      {user.year_of_study && user.campus ? <span className="detail-sep">·</span> : null}
-                      {user.campus ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                          <PinIcon /> {user.campus}
-                        </span>
-                      ) : null}
+                    <div className="muted small" style={{ marginTop: 4 }}>
+                      {detailLine}
                     </div>
                   ) : null}
                 </div>
@@ -233,10 +220,10 @@ export default function Profile() {
               ) : null}
 
               {links.length ? (
-                <div className="links-row" style={{ marginTop: 8 }}>
+                <div className="row" style={{ gap: 14, marginTop: 8 }}>
                   {links.map((l) => (
                     <a key={l.label} href={l.href} target="_blank" rel="noreferrer noopener" className="link">
-                      <LinkIcon /> {l.label}
+                      {l.label}
                     </a>
                   ))}
                 </div>
