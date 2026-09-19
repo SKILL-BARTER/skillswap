@@ -12,6 +12,10 @@ Frontend: https://visionary-cranachan-ed343f.netlify.app
 
 Backend API: https://skillswap-szay.onrender.com
 
+## Project Documents
+
+- [SkillSwap Presentation Playbook](docs/SkillSwap_Presentation_Playbook.docx)
+
 ---
 
 ## The pitch (for judges)
